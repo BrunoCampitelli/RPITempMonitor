@@ -33,10 +33,12 @@
 #include <time.h>
 
 #define VREF 1.623
-#define MINSMIL 1000*60*15
+#define MINSMIL 1000*60*1
+#define TEST 0
 
 unsigned char data[5];
 float calvolt=0;
+long double vavr=0;
 char label[10];
 char result[5];
 int i;
@@ -49,7 +51,7 @@ int main(int argc, char **argv)
 	printf("start\n");
 	data[0]=0b11000000;
 
-	if(wiringPiSPISetup(0,500000)<0) printf("setup error\n");
+	if(wiringPiSPISetup(0,3600000)<0) printf("setup error\n");
 	printf("calibrating\n");
 	for(i=0;i<10;i++){
 		wiringPiSPIDataRW(0,data,sizeof(data));
@@ -65,16 +67,41 @@ int main(int argc, char **argv)
 	printf("done\n");
 	data[0]=0b11001000;
 	printf("starting data collection now\n");
+	
+#if TEST
+	creat_file();
 	while(1){
+		for(i=0;i<1000;i++){
+			wiringPiSPIDataRW(0,data,sizeof(data));
+			vavr+=(double)((data[1]<<1)+(data[2]>>7))*5/1024+VREF-calvolt;		
+			data[0]=0b11001000;
+			delay(5);
+		}
+		vavr/=1000;
+		printf("%f\n",vavr/0.01-21.9);
+		//printf("%f\n",vavr);
+		//sprintf(result,"%f\n",((float)((data[1]<<1)+(data[2]>>7))*5/1024+VREF-calvolt)/0.01-21.9);
+		//sprintf(result,"%f\n",((float)((data[1]<<1)+(data[2]>>7))*5/1024+VREF-calvolt));
+		vavr=0;
+	}
+#else
+	while(1){
+		
+		for(i=0;i<1000;i++){
+			wiringPiSPIDataRW(0,data,sizeof(data));
+			vavr+=(double)((data[1]<<1)+(data[2]>>7))*5/1024+VREF-calvolt;		
+			data[0]=0b11001000;
+			delay(5);
+		}
+		vavr/=1000;
 		timstr=time(NULL);
 		print_file(ctime(&timstr));
-		wiringPiSPIDataRW(0,data,sizeof(data));
-		sprintf(result,"%f\n",((float)((data[1]<<1)+(data[2]>>7))*5/1024+VREF-calvolt)/0.01-21.9);
+		sprintf(result,"%f\n",vavr/0.01-21.9);
 		print_file(result);
-		data[0]=0b11001000;
+		vavr=0;
 		delay(MINSMIL);
 	}
-	
+#endif
 	return 0;
 }
 
