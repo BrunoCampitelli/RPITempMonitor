@@ -35,6 +35,16 @@ for i in range(0,len(data),2):#for every even index
 for i in range(0, len(dtime)):#for each date
     dtime[i]=mdates.date2num(dtime[i])#convert from datetime to matplot format
     
+print("number of temperatures:"+str(len(temperatures)))
 mplot.plot_date(dtime,temperatures)#plot the graph
 mplot.show()#show the graph
+
+#the following code is for tests and improvements
+##diffavg=0
+##for i in range(0, len(temperatures)-1):
+##    diffavg+=abs(temperatures[i]-temperatures[i+1])
+##
+##diffavg/=len(temperatures)-1
+##print(diffavg)
+
 
