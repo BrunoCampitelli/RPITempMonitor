@@ -100,28 +100,12 @@ int main(int argc, char **argv)
 	}
 #else
 	//creat_file();
-	//for(i=0;i<3000;i++)print_volt(0b11001);
 	while(1){
-		/*for(fail_count=0;fail_count<5;){
-			wiringPiSPIDataRW(0,data,sizeof(data));
-			vavr=(double)((data[1]<<1)+(data[2]>>7))*5/1024+VREF-calvolt;		
-			data[0]=0b11000000;
-			if(vavr-lastavr>0.003||lastavr-vavr<-0.003) fail_count=6;
-			else fail_count=6;
-		}*/
-		/*
-		data[0]=0b11000000;
-		wiringPiSPIDataRW(0,data,sizeof(data));
-		vavr=(double)((data[1]<<2)+(data[2]>>6))*1.62/1024;		
-		*/
 		vavr=takeavr(0b11001);
 		timstr=time(NULL);
 		print_file(ctime(&timstr));
-		//sprintf(result,"%f\n",vavr);
-		//printf("%f\n",vavr/0.01-274.1);
 		sprintf(result,"%f\n",vavr/0.01-274.1);
 		print_file(result);
-		//delay(100);
 		delay(MINSMIL);
 	}
 #endif
@@ -171,7 +155,6 @@ double takeavr(char channel){//fval for value frequency, dval for different vals
 		v=0;
 	}
 	
-	//printf("maxv:%d\n",maxv);
 	for(v=0;v<maxv;v++){
 		if(fval[v]>fval[mode])mode=v;
 	}
@@ -182,14 +165,6 @@ double takeavr(char channel){//fval for value frequency, dval for different vals
 		if(dval[mode]+1==dval[v])pmin=v;
 	}	
 	
-	/*
-	printf("mode:%d\n",dval[mode]);
-	printf("pmin:%d\n",dval[pmin]);
-	printf("mmin:%d\n",dval[mmin]);
-	printf("fmode:%d\n",fval[mode]);
-	printf("fpmin:%d\n",fval[pmin]);
-	printf("fmmin:%d\n",fval[mmin]);
-	*/
 	tavr=(double)(fval[mode]*dval[mode]+fval[pmin]*dval[pmin]+fval[mmin]*dval[mmin])
 		/(fval[mode]+fval[pmin]+fval[mmin]);
 	tavr=tavr*VREF/1024;
